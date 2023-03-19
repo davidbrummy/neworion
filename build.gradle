@@ -1,0 +1,64 @@
+plugins {
+    id 'war'
+    id 'java'
+    id 'checkstyle'
+    id 'pmd'
+    id "com.bmuschko.tomcat" version "2.5"
+    id 'idea'
+    id "io.freefair.lombok" version "6.6.3"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    providedCompile 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+    implementation 'com.google.guava:guava:31.1-jre'
+
+    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:3.0.0'
+    implementation 'org.glassfish.jersey.containers:jersey-container-servlet:3.1.1'
+    implementation 'org.glassfish.jersey.inject:jersey-hk2:3.1.1'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:3.1.1'
+
+    implementation 'org.slf4j:slf4j-api:1.7.30'
+
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.11.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.7.19'
+    testImplementation 'io.github.bonigarcia:webdrivermanager:1.6.1'
+    testImplementation 'org.seleniumhq.selenium:selenium-java:3.3.1'
+
+}
+
+checkstyleMain {
+    ignoreFailures = true
+}
+
+pmd {
+    ignoreFailures = true
+    sourceSets = [sourceSets.main]
+    ruleSetConfig = resources.text.fromFile("config/pmd/rulesets.xml")
+}
+
+
+task deploy(dependsOn: war) {
+    copy {
+        from "build/libs"
+        into "/Users/dvdjones/projects/apache-tomcat-9.0.12/webapps"
+        include "*.war"
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
